@@ -28,6 +28,7 @@ import org.apache.kafka.common.{Metric, MetricName, PartitionInfo, TopicPartitio
 import scala.collection.immutable.SortedSet
 import scala.concurrent.duration.FiniteDuration
 import scala.util.matching.Regex
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp
 
 /**
   * [[KafkaConsumer]] represents a consumer of Kafka records, with the
@@ -450,6 +451,17 @@ object KafkaConsumer {
         timeout: FiniteDuration
       ): F[List[PartitionInfo]] =
         withConsumer.blocking { _.partitionsFor(topic, timeout.asJava).asScala.toList }
+
+      override def offsetsForTimes(
+        timestampsToSearch: Map[TopicPartition, Long]
+      ): F[Map[TopicPartition, OffsetAndTimestamp]] =
+        withConsumer.blocking {
+          val mapWithJavaLong = timestampsToSearch.map { case (k, v) => k -> long2Long(v) }
+
+          val javaMap = mapWithJavaLong.asJava
+
+          _.offsetsForTimes(javaMap).asScala.toMap
+        }
 
       override def position(partition: TopicPartition): F[Long] =
         withConsumer.blocking { _.position(partition) }

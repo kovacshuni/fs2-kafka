@@ -9,6 +9,7 @@ package fs2.kafka.consumer
 import org.apache.kafka.common.PartitionInfo
 import scala.concurrent.duration.FiniteDuration
 import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.clients.consumer.OffsetAndTimestamp
 
 trait KafkaTopics[F[_]] {
 
@@ -24,6 +25,10 @@ trait KafkaTopics[F[_]] {
     * Returns the partitions for the specified topic.
     */
   def partitionsFor(topic: String, timeout: FiniteDuration): F[List[PartitionInfo]]
+
+  def offsetsForTimes(
+    timestampsToSearch: Map[TopicPartition, Long]
+  ): F[Map[TopicPartition, OffsetAndTimestamp]]
 
   /**
     * Returns the first offset for the specified partitions.<br>
